@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  HomeViewController.swift
 //  BilkentHackathon_iOS
 //
 //  Created by Mansur Muaz Ekici on 23.02.2019.
@@ -7,14 +7,13 @@
 //
 
 import UIKit
+import SocketIO
 
-class ViewController: UIViewController {
+class HomeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+
     }
-
-
+    
 }
-
