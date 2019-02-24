@@ -31,6 +31,15 @@ class CategoriesViewController: UIViewController {
 
         SocketIOManager.connectSocket()
         
+        cultureButton.alpha = 0.7
+        historyButton.alpha = 0.7
+        geographyButton.alpha = 0.7
+        artButton.alpha = 0.7
+        sportButton.alpha = 0.7
+        literatureButton.alpha = 0.7
+        musicButton.alpha = 0.7
+        movieButton.alpha = 0.7
+        
         var gesture = UITapGestureRecognizer(target: self, action: #selector(CultureTapped))
         cultureButton.addGestureRecognizer(gesture)
         gesture = UITapGestureRecognizer(target: self, action: #selector(HistoryTapped))
@@ -80,9 +89,12 @@ class CategoriesViewController: UIViewController {
         if !categories.contains(index) {
             categories.append(index)
             
+           buttonView.alpha = 1
+            
             buttonView.dropShadow(color: darkerColorForColor(color: buttonView.backgroundColor!), opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
         } else {
             
+            buttonView.alpha = 0.7
             categories = categories.filter {$0 != index}
             buttonView.dropShadow(color: buttonView.backgroundColor!, opacity: 0, offSet: CGSize(width: 0, height: 0), radius: 0, scale: true)
         }

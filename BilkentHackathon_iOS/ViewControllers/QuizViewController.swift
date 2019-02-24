@@ -11,6 +11,9 @@ import SwiftyJSON
 
 class QuizViewController: UIViewController {
 
+    @IBOutlet weak var rankLabel: UILabel!
+    @IBOutlet weak var scoreLabel: UILabel!
+    
     @IBOutlet weak var timerLabel: UITextView!
     @IBOutlet weak var questionLabel: UITextView!
     
@@ -19,12 +22,9 @@ class QuizViewController: UIViewController {
     @IBOutlet weak var cButton: UIButton!
     @IBOutlet weak var dButton: UIButton!
     
-    var timer = Timer()
     var timeLeft:Int? = nil
-    var lastTime = 10
     var numberOfAnswers = 0
     var isChecked = false
-    var isResults = false
     var trueAnswer: Int? = nil
     var selectedAnswer: Int? = nil
     
@@ -32,13 +32,17 @@ class QuizViewController: UIViewController {
     var defaultButtonHeight = Double()
     
     var name = ""
-    var resultsTime = Int()
+    var score = 0
+    var rank = 0
     
     @IBOutlet weak var readyLabel: UILabel!
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+         self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Kaydet & Çık", style: .done, target: self, action: #selector(quitButtonTapped))
+        
         
         defaultButtonWidth = Double(aButton.frame.size.width)
         defaultButtonHeight = Double(aButton.frame.size.height)
@@ -50,14 +54,28 @@ class QuizViewController: UIViewController {
         self.cButton.alpha = 0.2
         self.dButton.alpha = 0.2
         
+        self.aButton.isEnabled = false
+        self.bButton.isEnabled = false
+        self.cButton.isEnabled = false
+        self.dButton.isEnabled = false
+        
         self.questionLabel.alpha = 1
+        
+        self.rankLabel.alpha = 0
+        self.scoreLabel.alpha = 0
         
         readyLabel.alpha = 0.7
         
         SocketIOManager.socket.on("general") { (data, ack) in
             let json = JSON(data)
-            self.resultsTime = json[0]["stateDurations"]["Result"].intValue
             self.name = json[0]["name"].stringValue
+            
+            let label = UILabel(frame: CGRect(x: 35, y: 0, width: 50, height: 30))
+            label.text = self.name
+            
+            let barButton = UIBarButtonItem.init(customView: label)
+            self.navigationItem.leftBarButtonItem = barButton
+           
         }
         
         SocketIOManager.socket.on("realtime", callback: { (data, ack) in
@@ -77,62 +95,6 @@ class QuizViewController: UIViewController {
                     self.readyLabel.text = "Bitti!"
                 }
             }
-                
-                
-//                if (!self.isChecked) {
-//                    self.aButton.alpha = 0.2
-//                    self.bButton.alpha = 0.2
-//                    self.cButton.alpha = 0.2
-//                    self.dButton.alpha = 0.2
-//
-//                    self.aButton.isEnabled = false
-//                    self.bButton.isEnabled = false
-//                    self.cButton.isEnabled = false
-//                    self.dButton.isEnabled = false
-//
-//                    self.questionLabel.alpha = 0.2
-//
-//                    if (self.timeLeft == 20) {
-//                        self.isChecked = false
-//                        self.isStarted = true
-//                        self.readyLabel.text = "Başla!"
-//
-//                        self.aButton.dropShadow(color: self.aButton.backgroundColor!, opacity: 0, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
-//                        self.bButton.dropShadow(color: self.bButton.backgroundColor!, opacity: 0, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
-//                        self.cButton.dropShadow(color: self.cButton.backgroundColor!, opacity: 0, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
-//                        self.dButton.dropShadow(color: self.dButton.backgroundColor!, opacity: 0, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
-//
-//                        self.aCheck.alpha = 0
-//                        self.bCheck.alpha = 0
-//                        self.cCheck.alpha = 0
-//                        self.dCheck.alpha = 0
-//
-//                        self.selectedAnswer = nil
-//                    }
-//                } else {
-//                    if(!self.isChecked) {
-//                        self.aButton.alpha = 1
-//                        self.bButton.alpha = 1
-//                        self.cButton.alpha = 1
-//                        self.dButton.alpha = 1
-//
-//                        self.aButton.isEnabled = true
-//                        self.bButton.isEnabled = true
-//                        self.cButton.isEnabled = true
-//                        self.dButton.isEnabled = true
-//                    }
-//
-//                    self.questionLabel.alpha = 1
-//
-//                    self.readyLabel.text = "\(self.numberOfAnswers) cevap verildi."
-//
-//                    if (self.timeLeft == 0) {
-//                        self.isStarted = false
-//                        self.readyLabel.text = "Süre bitti!"
-//                        self.showResults()
-//                    }
-//                }
-//            }
         })
         
         SocketIOManager.socket.on("play", callback: { (data, ack) in
@@ -140,6 +102,9 @@ class QuizViewController: UIViewController {
 
             self.questionLabel.text = json[0]["question"]["text"].stringValue
             self.timerLabel.alpha = 1
+            self.timerLabel.font = self.timerLabel.font!.withSize(50)
+
+            self.selectedAnswer = nil
             
             self.aButton.setTitle(json[0]["question"]["choices"][0].stringValue, for: .normal)
             self.bButton.setTitle(json[0]["question"]["choices"][1].stringValue, for: .normal)
@@ -164,9 +129,34 @@ class QuizViewController: UIViewController {
         
         SocketIOManager.socket.on("results", callback: { (data, ack) in
             let json = JSON(data)
-        
+            print(json)
             self.readyLabel.text = "Cevap:"
-            self.timerLabel.alpha = 0
+            self.timerLabel.alpha = 0.8
+            
+            let scores = json[0]["scoreboard"].array
+            
+            self.aButton.isEnabled = false
+            self.bButton.isEnabled = false
+            self.cButton.isEnabled = false
+            self.dButton.isEnabled = false
+            
+            self.aButton.alpha = 0.2
+            self.bButton.alpha = 0.2
+            self.cButton.alpha = 0.2
+            self.dButton.alpha = 0.2
+            
+            for score in scores! {
+                if (self.name == score["name"].stringValue) {
+                    self.rank = score["rank"].intValue
+                    self.score = score["score"].intValue
+                    
+                    self.rankLabel.text = "Sıralama: \(self.rank)"
+                    self.scoreLabel.text = "Skor: \(self.score)"
+                    
+                    self.rankLabel.alpha = 1
+                    self.scoreLabel.alpha = 1
+                }
+            }
             
             let aRatio = json[0]["summary"][0].doubleValue
             let bRatio = json[0]["summary"][1].doubleValue
@@ -180,29 +170,6 @@ class QuizViewController: UIViewController {
         
             self.showTrueAnswer()
         })
-        
-        
-//
-//        SocketIOManager.socket.on("results", callback: { (data, ack) in
-//            let json = JSON(data)
-//
-//
-//
-//                self.lastTime = 10
-//                self.showResults()
-//
-//                let aRatio = json[0]["summary"][0].intValue
-//                let bRatio = json[0]["summary"][1].intValue
-//                let cRatio = json[0]["summary"][2].intValue
-//                let dRatio = json[0]["summary"][3].intValue
-//
-//                self.setButtonSize(button: self.aButton, ratio: Double(aRatio))
-//                self.setButtonSize(button: self.bButton, ratio: Double(bRatio))
-//                self.setButtonSize(button: self.cButton, ratio: Double(cRatio))
-//                self.setButtonSize(button: self.dButton, ratio: Double(dRatio))
-//
-//
-//        })
     }
 
     @IBAction func aSelected(_ sender: Any) {
@@ -293,16 +260,31 @@ class QuizViewController: UIViewController {
         
         if let trueAnswerInt = trueAnswer {
 
+            self.timerLabel.font = timerLabel.font!.withSize(30)
+
+            switch trueAnswerInt {
+            case 0:
+                self.timerLabel.text = aButton.titleLabel?.text
+            case 1:
+                self.timerLabel.text = bButton.titleLabel?.text
+            case 2:
+                self.timerLabel.text = cButton.titleLabel?.text
+            case 3:
+                self.timerLabel.text = dButton.titleLabel?.text
+            default:
+                break
+            }
+            
             if (selectedAnswer != trueAnswerInt) {
                 switch selectedAnswer {
                 case 0:
-                    self.aButton.dropShadow(color: .red, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.aButton.dropShadow(color: .red, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 case 1:
-                    self.bButton.dropShadow(color: .red, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.bButton.dropShadow(color: .red, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 case 2:
-                    self.cButton.dropShadow(color: .red, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.cButton.dropShadow(color: .red, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 case 3:
-                    self.dButton.dropShadow(color: .red, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.dButton.dropShadow(color: .red, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 default:
                     break
                 }
@@ -310,29 +292,29 @@ class QuizViewController: UIViewController {
                 switch trueAnswerInt {
                 case 0:
                     self.aButton.alpha = 0.9
-                    self.aButton.dropShadow(color: .blue, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.aButton.dropShadow(color: .blue, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 case 1:
                     self.bButton.alpha = 0.9
-                    self.bButton.dropShadow(color: .blue, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.bButton.dropShadow(color: .blue, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 case 2:
                     self.cButton.alpha = 0.9
-                    self.cButton.dropShadow(color: .blue, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.cButton.dropShadow(color: .blue, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 case 3:
                     self.dButton.alpha = 0.9
-                    self.dButton.dropShadow(color: .blue, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.dButton.dropShadow(color: .blue, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 default:
                     break
                 }
             } else {
                 switch selectedAnswer {
                 case 0:
-                    self.aButton.dropShadow(color: .green, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.aButton.dropShadow(color: .green, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 case 1:
-                    self.bButton.dropShadow(color: .green, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.bButton.dropShadow(color: .green, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 case 2:
-                    self.cButton.dropShadow(color: .green, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.cButton.dropShadow(color: .green, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 case 3:
-                    self.dButton.dropShadow(color: .green, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+                    self.dButton.dropShadow(color: .green, opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 8, scale: true)
                 default:
                     break
                 }
@@ -370,6 +352,11 @@ class QuizViewController: UIViewController {
     func enableButtons(button: UIButton) {
         button.alpha = 1
         button.isEnabled = true
+    }
+    
+    @objc func quitButtonTapped() {
+        SocketIOManager.socket.disconnect()
+        self.navigationController?.popToRootViewController(animated: true)
     }
 }
 
