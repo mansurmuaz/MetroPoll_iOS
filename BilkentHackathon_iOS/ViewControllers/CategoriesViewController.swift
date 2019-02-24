@@ -52,39 +52,39 @@ class CategoriesViewController: UIViewController {
     
     
     @objc func CultureTapped() {
-        handleTap(index: 0, view: cultureButton)
+        handleTap(index: 0, buttonView: cultureButton)
     }
     @objc func HistoryTapped() {
-        handleTap(index: 1, view: historyButton)
+        handleTap(index: 1, buttonView: historyButton)
     }
     @objc func GeographyTapped() {
-        handleTap(index: 2, view: geographyButton)
+        handleTap(index: 2, buttonView: geographyButton)
     }
     @objc func ArtTapped() {
-        handleTap(index: 3, view: artButton)
+        handleTap(index: 3, buttonView: artButton)
     }
     @objc func SportTapped() {
-        handleTap(index: 4, view: sportButton)
+        handleTap(index: 4, buttonView: sportButton)
     }
     @objc func LiteratureTapped() {
-        handleTap(index: 5, view: literatureButton)
+        handleTap(index: 5, buttonView: literatureButton)
     }
     @objc func MusicTapped() {
-        handleTap(index: 6, view: musicButton)
+        handleTap(index: 6, buttonView: musicButton)
     }
     @objc func MovieTapped() {
-        handleTap(index: 7, view: movieButton)
+        handleTap(index: 7, buttonView: movieButton)
     }
     
-    func handleTap(index: Int, view: UIView) {
+    func handleTap(index: Int, buttonView: UIView) {
         if !categories.contains(index) {
             categories.append(index)
             
-            
-            view.dropShadow(color: darkerColorForColor(color: view.backgroundColor!), opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
+            buttonView.dropShadow(color: darkerColorForColor(color: buttonView.backgroundColor!), opacity: 1, offSet: CGSize(width: 0, height: 0), radius: 6, scale: true)
         } else {
+            
             categories = categories.filter {$0 != index}
-            view.dropShadow(color: view.backgroundColor!, opacity: 0, offSet: CGSize(width: 0, height: 0), radius: 0, scale: true)
+            buttonView.dropShadow(color: buttonView.backgroundColor!, opacity: 0, offSet: CGSize(width: 0, height: 0), radius: 0, scale: true)
         }
         print(categories.description)
     }
@@ -103,10 +103,9 @@ class CategoriesViewController: UIViewController {
     @objc func startButtonTapped() {
     
         // Send categories to server
-        SocketIOManager.socket.emit("login", LoginData(deviceID: deviceID, categories: categories)) {
-            print("XXXX ccc done")
-            self.performSegue(withIdentifier: "startQuiz", sender: self)
-        }
+        SocketIOManager.socket.emit("login", LoginData(deviceID: deviceID, categories: categories))
+        print("XXX Logged in!")
+        self.performSegue(withIdentifier: "startQuiz", sender: self)
     }
 }
 

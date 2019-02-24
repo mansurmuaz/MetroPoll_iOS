@@ -8,6 +8,7 @@
 
 import UIKit
 import SocketIO
+import SwiftyJSON
 
 enum Namespace {
     case quiz
@@ -19,7 +20,15 @@ struct LoginData : SocketData {
     let categories: [Int]
     
     func socketRepresentation() -> SocketData {
-        return ["phoneID": deviceID, "categories": categories]
+        return ["phoneId": deviceID, "categories": categories]
+    }
+}
+
+struct ChoiceData : SocketData {
+    let choice: Int
+    
+    func socketRepresentation() -> SocketData {
+        return ["choice": choice]
     }
 }
 
@@ -30,8 +39,6 @@ class SocketIOManager: NSObject {
     static let manager = SocketManager(socketURL: URL(string: "http://104.248.131.83:8080")!, config: [.log(true), .compress])
     
     static var socket = SocketIOManager.manager.defaultSocket
-    
-    static let deviceID = UIDevice.current.identifierForVendor!.uuidString
     
     func establishConnection(namespace: Namespace) {
         
@@ -56,6 +63,21 @@ class SocketIOManager: NSObject {
             print("QUIZ socket connected")
         }
     }
+    
+    
+//    class func getRealtimeData() {
+////        socket.on("play", callback: { (data, ack) in
+////            print("PLAY: \(data) ")
+////        })
+//
+////        socket.on("realtime", callback: { (data, ack) in
+////            let json = JSON(data)
+////            timeLeft = json[0]["timeLeft"].intValue
+////            numberOfAnswers = json[0]["numberOfAnswers"].intValue
+////                            print("REALTIME: \(data)")
+////                            print("XX--->>>  \(timeLeft)  ----- \(numberOfAnswers)")
+////        })
+//    }
     
 //    class func login(categories: [Int]) {
 //        
