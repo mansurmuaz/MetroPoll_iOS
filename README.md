@@ -4,9 +4,14 @@ AGUCS olarak katıldığımız Bilkent Üniversitesi CYBERPARK tarafından düze
 
 Uygulamamızda, metropol şehirlerde milyonlarca tarafından kullanılan metro gibi internet erişiminin olmadığı ortamlarda, insanların boşa geçirmiş olduğu zamanı, çevresindeki insanlarla lokal bir ağ üzerinden oyunlar oynayıp, sosyalleşebileceği bir platform oluşturmayı hedefledik. 
 
+---
+
 iOS, Android ve Web uygulamalarının kaynak kodlarına aşağıdaki linklerden ulaşabilirsiniz.
+
 iOS: https://github.com/mansurmuaz/MetroPoll_iOS
+
 Android: https://github.com/mabdullahsoyturk/BilkentHackathonAndroid
+
 Web: https://github.com/mabdullahsoyturk/BilkentHackathonWeb
 
 #iOS #Android #MUG #Bilkent #Cyberpark #Hackathon
